@@ -5,6 +5,7 @@ import { X } from "lucide-react"
 import type { TrackPoint } from "@/trip/types"
 import { speeds } from "@/trip/stats"
 import { cn } from "@/lib/utils"
+import { speedColor, START_COLOR, END_COLOR, MARKER_RING } from "./mapColors"
 
 interface TripMapProps {
   points: TrackPoint[]
@@ -15,12 +16,6 @@ interface TripMapProps {
   interactive?: boolean
   /** Cap rendered segments for long rides. */
   maxSegments?: number
-}
-
-/** Slow→fast speed mapped to a blue→orange hue. */
-function speedColor(t: number): string {
-  const hue = 205 - t * 165
-  return `hsl(${hue}, 85%, 55%)`
 }
 
 function downsampleIndices(len: number, max: number): number[] {
@@ -103,17 +98,17 @@ export function TripMap({
     // Start / end markers (vector circles — no image assets to 404 on).
     L.circleMarker(latlngs[0], {
       radius: 6,
-      color: "#fff",
+      color: MARKER_RING,
       weight: 2,
-      fillColor: "#22c55e",
+      fillColor: START_COLOR,
       fillOpacity: 1,
     }).addTo(map)
     if (latlngs.length > 1) {
       L.circleMarker(latlngs[latlngs.length - 1], {
         radius: 6,
-        color: "#fff",
+        color: MARKER_RING,
         weight: 2,
-        fillColor: "#ef4444",
+        fillColor: END_COLOR,
         fillOpacity: 1,
       }).addTo(map)
     }

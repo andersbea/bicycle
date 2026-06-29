@@ -14,6 +14,16 @@ test("shows empty states before any rides", async ({ page }) => {
   await expect(page.getByText("No data yet")).toBeVisible()
 })
 
+test("keeps the open view in the URL across a refresh", async ({ page }) => {
+  await page.goto("/")
+  await page.getByRole("button", { name: "Trends" }).click()
+  await expect(page).toHaveURL(/#\/trends$/)
+  await page.reload()
+  // Still on Trends after refresh (not bounced back to the Ride tab).
+  await expect(page).toHaveURL(/#\/trends$/)
+  await expect(page.getByText("No data yet")).toBeVisible()
+})
+
 test("pause and resume toggles the recording state", async ({ page }) => {
   await page.goto("/")
   await page.getByRole("button", { name: "Start ride" }).click()

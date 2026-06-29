@@ -10,10 +10,9 @@ import { TripDetail } from "./views/TripDetail"
 import { useTripTracker } from "./hooks/useTripTracker"
 import { useTheme } from "./hooks/useTheme"
 import { useLocalStorage } from "./hooks/useLocalStorage"
+import { useHashRoute, type View } from "./hooks/useHashRoute"
 import { deleteTrip, loadTrips } from "./trip/storage"
 import type { Trip } from "./trip/types"
-
-type View = "track" | "history" | "trends" | "settings"
 
 const NAV: { key: View; label: string; icon: typeof Bike }[] = [
   { key: "track", label: "Ride", icon: Bike },
@@ -33,30 +32,31 @@ export default function App() {
   const { theme, setTheme, isDark, toggleMode } = useTheme()
   const [weatherEnabled, setWeatherEnabled] = useLocalStorage("bicycle.weather.v1", true)
   const [trips, setTrips] = useState<Trip[]>(() => loadTrips())
-  const [view, setView] = useState<View>("track")
-  // Store the id, not the object, so the detail view always reflects the
-  // current list (and clears itself when that ride is deleted).
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const selected = selectedId ? (trips.find((t) => t.id === selectedId) ?? null) : null
+  // The open view + any open ride detail live in the URL hash (survives refresh).
+  const { view, tripId, navigate, openTrip, closeTrip } = useHashRoute()
+  const selected = tripId ? (trips.find((t) => t.id === tripId) ?? null) : null
 
   const refresh = useCallback(() => setTrips(loadTrips()), [])
 
-  const handleFinish = useCallback((trip: Trip) => {
-    setTrips(loadTrips())
-    setSelectedId(trip.id)
-  }, [])
+  const handleFinish = useCallback(
+    (trip: Trip) => {
+      setTrips(loadTrips())
+      openTrip(trip.id)
+    },
+    [openTrip],
+  )
 
   const tracker = useTripTracker({ onFinish: handleFinish, weatherEnabled })
 
-  const openTrip = useCallback((t: Trip) => setSelectedId(t.id), [])
+  const openTripObj = useCallback((t: Trip) => openTrip(t.id), [openTrip])
 
   const handleDelete = useCallback(
     (id: string) => {
       deleteTrip(id)
-      setSelectedId(null)
+      closeTrip()
       refresh()
     },
-    [refresh],
+    [refresh, closeTrip],
   )
 
   const themeToggle = (
@@ -80,10 +80,7 @@ export default function App() {
           {/* Desktop sidebar */}
           <Sidebar
             view={view}
-            onNavigate={(v) => {
-              setSelectedId(null)
-              setView(v)
-            }}
+            onNavigate={navigate}
             recording={tracker.isActive}
             themeToggle={themeToggle}
           />
@@ -93,11 +90,11 @@ export default function App() {
             <div className="flex min-h-0 flex-1 flex-col">
               {selected ? (
                 <TripDetail
-                trip={selected}
-                dark={isDark}
-                onBack={() => setSelectedId(null)}
-                onDelete={handleDelete}
-              />
+                  trip={selected}
+                  dark={isDark}
+                  onBack={closeTrip}
+                  onDelete={handleDelete}
+                />
               ) : (
                 <>
                   <header className="flex items-center gap-2 px-4 py-2 safe-top safe-x lg:px-8">
@@ -113,8 +110,8 @@ export default function App() {
                   <main className="min-h-0 flex-1">
                     <div className="mx-auto h-full w-full max-w-5xl">
                       {view === "track" && <TrackView tracker={tracker} />}
-                      {view === "history" && <HistoryView trips={trips} onOpen={openTrip} />}
-                      {view === "trends" && <TrendsView trips={trips} onOpen={openTrip} />}
+                      {view === "history" && <HistoryView trips={trips} onOpen={openTripObj} />}
+                      {view === "trends" && <TrendsView trips={trips} onOpen={openTripObj} />}
                       {view === "settings" && (
                         <SettingsView
                           trips={trips}
@@ -132,14 +129,7 @@ export default function App() {
             </div>
 
             {/* Mobile / tablet bottom dock (normal flow → reserves its space) */}
-            <BottomNav
-              view={view}
-              recording={tracker.isActive}
-              onNavigate={(v) => {
-                setSelectedId(null)
-                setView(v)
-              }}
-            />
+            <BottomNav view={view} recording={tracker.isActive} onNavigate={navigate} />
           </div>
         </div>
 

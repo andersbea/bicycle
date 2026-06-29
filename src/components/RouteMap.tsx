@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import type { TrackPoint } from "@/trip/types"
 import { projectRoute } from "@/trip/stats"
 import { cn } from "@/lib/utils"
+import { speedColor, START_COLOR, END_COLOR, MARKER_RING } from "./mapColors"
 
 interface RouteMapProps {
   points: TrackPoint[]
@@ -12,12 +13,8 @@ interface RouteMapProps {
   /** Cap segments for cheap rendering on long rides. */
   maxSegments?: number
   showEndpoints?: boolean
-}
-
-/** Slow→fast speed mapped to a blue→orange hue. */
-function speedColor(t: number): string {
-  const hue = 205 - t * 165
-  return `hsl(${hue}, 85%, 58%)`
+  /** Line width in *screen* pixels (non-scaling), so thumbnails stay visible. */
+  strokeWidth?: number
 }
 
 function downsample<T>(arr: T[], max: number): T[] {
@@ -36,6 +33,7 @@ export function RouteMap({
   className,
   maxSegments = 600,
   showEndpoints = true,
+  strokeWidth = 3,
 }: RouteMapProps) {
   const { pts, speedT } = useMemo(
     () => projectRoute(points, width, height, 16),
@@ -95,15 +93,16 @@ export function RouteMap({
           x2={s.x2}
           y2={s.y2}
           stroke={s.color}
-          strokeWidth={5}
+          strokeWidth={strokeWidth}
           strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
         />
       ))}
       {showEndpoints && (
         <>
-          <circle cx={start.x} cy={start.y} r={9} fill="oklch(0.82 0.16 150)" stroke="white" strokeWidth={2} />
+          <circle cx={start.x} cy={start.y} r={11} fill={START_COLOR} stroke={MARKER_RING} strokeWidth={3} vectorEffect="non-scaling-stroke" />
           {pts.length > 1 && (
-            <circle cx={end.x} cy={end.y} r={9} fill="oklch(0.7 0.2 20)" stroke="white" strokeWidth={2} />
+            <circle cx={end.x} cy={end.y} r={11} fill={END_COLOR} stroke={MARKER_RING} strokeWidth={3} vectorEffect="non-scaling-stroke" />
           )}
         </>
       )}
