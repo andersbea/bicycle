@@ -28,7 +28,7 @@ export function StatTile({
   return (
     <div
       className={cn(
-        "rounded-box bg-base-200/60 px-3 py-2.5 ring-1 ring-base-content/5",
+        "rounded-box bg-base-200/60 px-3 py-2.5 ring-1 ring-base-content/5 elevate",
         className,
       )}
     >

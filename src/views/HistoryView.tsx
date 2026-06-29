@@ -39,9 +39,9 @@ export function HistoryView({
   }
 
   return (
-    <div className="flex h-full flex-col gap-3 overflow-y-auto no-scrollbar px-4 pb-4 lg:px-8">
+    <div className="flex h-full flex-col gap-3 overflow-y-auto no-scrollbar px-5 pt-1 pb-4 lg:px-8">
       {/* lifetime totals */}
-      <div className="grid grid-cols-4 gap-2 rounded-box bg-base-200/50 p-3 ring-1 ring-base-content/5">
+      <div className="grid grid-cols-4 gap-2 rounded-box bg-base-200/50 p-3 ring-1 ring-base-content/5 elevate">
         <Total label="Rides" value={String(totals.count)} />
         <Total label="Distance" value={`${km(totals.dist, totals.dist < 100_000 ? 1 : 0)}`} unit="km" />
         <Total label="Time" value={durationShort(totals.dur)} />
@@ -75,7 +75,7 @@ function RideCard({ trip, onClick }: { trip: Trip; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-stretch gap-3 rounded-box bg-base-200/50 p-2.5 text-left ring-1 ring-base-content/5 transition-colors hover:bg-base-200 active:scale-[0.99]"
+      className="flex items-stretch gap-3 rounded-box bg-base-200/50 p-2.5 text-left ring-1 ring-base-content/5 elevate transition-colors hover:bg-base-200 active:scale-[0.99]"
     >
       <RouteMap
         points={trip.points}

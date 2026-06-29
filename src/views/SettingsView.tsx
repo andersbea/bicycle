@@ -58,7 +58,7 @@ export function SettingsView({
   }
 
   return (
-    <div className="h-full overflow-y-auto no-scrollbar px-4 pb-6 lg:px-8">
+    <div className="h-full overflow-y-auto no-scrollbar px-5 pt-1 pb-6 lg:px-8">
       <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
       {/* Appearance */}
       <Section icon={Palette} title="Appearance">
@@ -221,7 +221,7 @@ function Section({
   children: React.ReactNode
 }) {
   return (
-    <section className="rounded-box bg-base-200/40 p-4 ring-1 ring-base-content/5">
+    <section className="rounded-box bg-base-200/40 p-4 ring-1 ring-base-content/5 elevate">
       <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold">
         <Icon className="h-4 w-4 text-primary" /> {title}
       </h2>

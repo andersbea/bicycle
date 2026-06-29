@@ -92,7 +92,7 @@ export function TrendsView({ trips, onOpen }: { trips: Trip[]; onOpen: (t: Trip)
   }
 
   return (
-    <div className="flex h-full flex-col gap-4 overflow-y-auto no-scrollbar px-4 pb-6 lg:px-8">
+    <div className="flex h-full flex-col gap-4 overflow-y-auto no-scrollbar px-5 pt-1 pb-6 lg:px-8">
       {/* metric switcher */}
       <div role="tablist" className="tabs tabs-box tabs-sm self-start">
         {(Object.keys(METRICS) as MetricKey[]).map((key) => {
@@ -112,7 +112,7 @@ export function TrendsView({ trips, onOpen }: { trips: Trip[]; onOpen: (t: Trip)
 
       <div className="flex flex-col gap-4 lg:grid lg:grid-cols-3 lg:items-start">
       {/* bar chart */}
-      <div className="rounded-box bg-base-200/50 p-3 ring-1 ring-base-content/5 lg:col-span-2">
+      <div className="rounded-box bg-base-200/50 p-3 ring-1 ring-base-content/5 elevate lg:col-span-2">
         <div className="mb-2 flex items-center justify-between text-xs opacity-60">
           <span>Last {chrono.length} rides</span>
           <span className="tnum">avg {m.fmt(avgVal)}</span>
@@ -149,7 +149,7 @@ export function TrendsView({ trips, onOpen }: { trips: Trip[]; onOpen: (t: Trip)
         </div>
         <button
           onClick={() => onOpen(latest.trip)}
-          className="grid w-full grid-cols-3 gap-2 rounded-box bg-base-200/50 p-3 text-left ring-1 ring-base-content/5 hover:bg-base-200"
+          className="grid w-full grid-cols-3 gap-2 rounded-box bg-base-200/50 p-3 text-left ring-1 ring-base-content/5 elevate hover:bg-base-200"
         >
           <Delta label="Distance" value={distance(latest.stats.distanceM)} cur={latest.stats.distanceM} avg={avg.distanceM} />
           <Delta label="Avg speed" value={`${kmh(latest.stats.avgSpeed)} km/h`} cur={latest.stats.avgSpeed} avg={avg.avgSpeed} />
@@ -200,7 +200,7 @@ function BestCard({ label, value, sub, onClick }: { label: string; value: string
   return (
     <button
       onClick={onClick}
-      className="rounded-box bg-base-200/50 p-3 text-left ring-1 ring-base-content/5 hover:bg-base-200"
+      className="rounded-box bg-base-200/50 p-3 text-left ring-1 ring-base-content/5 elevate hover:bg-base-200"
     >
       <div className="text-[0.65rem] uppercase tracking-wide opacity-50">{label}</div>
       <div className="tnum text-lg font-bold leading-tight">{value}</div>

@@ -97,7 +97,7 @@ export default function App() {
                 />
               ) : (
                 <>
-                  <header className="flex items-center gap-2 px-4 py-2 safe-top safe-x lg:px-8">
+                  <header className="flex items-center gap-2 px-5 py-3 safe-top safe-x lg:px-8">
                     <img
                       src={`${import.meta.env.BASE_URL}logo.svg`}
                       alt=""

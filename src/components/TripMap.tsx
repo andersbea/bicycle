@@ -134,7 +134,7 @@ export function TripMap({
     )
   }
 
-  return <div ref={containerRef} className={cn("z-0 overflow-hidden rounded-box", className)} />
+  return <div ref={containerRef} className={cn("z-0 overflow-hidden rounded-box elevate", className)} />
 }
 
 /** Full-screen, gesture-driven map view opened from the detail preview. */
