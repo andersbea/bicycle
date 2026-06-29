@@ -39,8 +39,23 @@ npm run dev      # http://localhost:5173/  (use --host to open on your phone)
 npm run build    # production bundle
 npm run preview  # serve the build
 npm run lint     # eslint
-npm test         # Playwright suite (desktop + mobile projects)
+npm test         # everything: Vitest unit tests, then Playwright E2E
+npm run test:unit  # Vitest unit tests only (fast)
+npm run test:e2e   # Playwright E2E only (desktop + mobile projects)
+npm run test:watch # Vitest in watch mode
 ```
+
+### Tests
+
+- **Unit** (Vitest, `src/**/*.test.ts`) cover the pure logic: distance/elevation/
+  grade math (`stats.ts`), metric formatting, localStorage `storage.ts`,
+  backup `import`/`export` (incl. GPX/CSV builders), and weather-code mapping.
+- **E2E** (Playwright, `tests/*.spec.ts`, run on desktop + mobile viewports)
+  cover record→save, pause/resume, mid-ride reload recovery, backup
+  export→import round-trip, ride deletion, trends, theme toggle persistence,
+  weather-toggle persistence and empty states.
+- CI runs lint + build + unit + E2E on every push and PR
+  ([`.github/workflows/test.yml`](.github/workflows/test.yml)).
 
 To exercise tracking locally, open the app on a phone over your LAN
 (`npm run dev -- --host`) and allow location access — desktop browsers will

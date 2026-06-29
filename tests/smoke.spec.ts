@@ -1,20 +1,5 @@
-import { test, expect, type Page } from "@playwright/test"
-
-// A short fake route near central Gothenburg — each point ~30–40 m apart.
-const ROUTE = [
-  { latitude: 57.7089, longitude: 11.9746, accuracy: 5 },
-  { latitude: 57.7092, longitude: 11.9749, accuracy: 5 },
-  { latitude: 57.7096, longitude: 11.9753, accuracy: 5 },
-  { latitude: 57.7101, longitude: 11.9758, accuracy: 5 },
-  { latitude: 57.7106, longitude: 11.9764, accuracy: 5 },
-]
-
-async function feedRoute(page: Page) {
-  for (const pos of ROUTE) {
-    await page.context().setGeolocation(pos)
-    await page.waitForTimeout(400)
-  }
-}
+import { test, expect } from "@playwright/test"
+import { ROUTE, feedRoute, recordRide, RIDE_TITLE } from "./helpers"
 
 test.beforeEach(async ({ context }) => {
   await context.grantPermissions(["geolocation"])
@@ -30,8 +15,6 @@ test("loads to the ready screen", async ({ page }) => {
 test("records a ride and saves it to history", async ({ page }) => {
   await page.goto("/")
   await page.getByRole("button", { name: "Start ride" }).click()
-
-  // Recording UI appears.
   await expect(page.getByText("Recording")).toBeVisible()
 
   await feedRoute(page)
@@ -39,28 +22,18 @@ test("records a ride and saves it to history", async ({ page }) => {
   // Distance should have accumulated beyond zero.
   await expect(page.getByText(/\d+\s*m|\d+\.\d+\s*km/).first()).toBeVisible()
 
-  // Finish the ride.
   await page.getByRole("button", { name: "Finish" }).click()
   await page.getByRole("button", { name: "Finish & save" }).click()
 
   // We land on the ride detail; go back and open History.
   await page.getByRole("button", { name: "Back" }).click()
   await page.getByRole("button", { name: "History" }).click()
-
-  // A ride card with a "ride" title should be listed.
-  await expect(
-    page.getByText(/(morning|afternoon|evening|night) ride/i).first(),
-  ).toBeVisible()
+  await expect(page.getByText(RIDE_TITLE).first()).toBeVisible()
 })
 
 test("backup export then import restores rides", async ({ page }) => {
   await page.goto("/")
-
-  // Record a quick ride.
-  await page.getByRole("button", { name: "Start ride" }).click()
-  await feedRoute(page)
-  await page.getByRole("button", { name: "Finish" }).click()
-  await page.getByRole("button", { name: "Finish & save" }).click()
+  await recordRide(page)
   await page.getByRole("button", { name: "Back" }).click()
 
   // Export the backup and grab the file.
@@ -85,7 +58,5 @@ test("backup export then import restores rides", async ({ page }) => {
 
   // The ride returns to history.
   await page.getByRole("button", { name: "History" }).click()
-  await expect(
-    page.getByText(/(morning|afternoon|evening|night) ride/i).first(),
-  ).toBeVisible()
+  await expect(page.getByText(RIDE_TITLE).first()).toBeVisible()
 })

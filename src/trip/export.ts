@@ -66,8 +66,8 @@ export function downloadTripJson(trip: Trip): void {
   )
 }
 
-/** Download a single ride as a CSV of track points (for spreadsheets). */
-export function downloadTripCsv(trip: Trip): void {
+/** Build the CSV (one row per track point) for a ride. Pure. */
+export function tripToCsv(trip: Trip): string {
   const header = "timestamp,latitude,longitude,altitude_m,speed_ms,accuracy_m,heading_deg"
   const rows = trip.points.map((p) =>
     [
@@ -80,11 +80,11 @@ export function downloadTripCsv(trip: Trip): void {
       p.heading ?? "",
     ].join(","),
   )
-  triggerDownload(`${slug(trip)}.csv`, "text/csv", [header, ...rows].join("\n"))
+  return [header, ...rows].join("\n")
 }
 
-/** Download a single ride as GPX 1.1 (opens in Strava, Garmin, etc.). */
-export function downloadTripGpx(trip: Trip): void {
+/** Build a GPX 1.1 document for a ride (opens in Strava, Garmin, etc.). Pure. */
+export function tripToGpx(trip: Trip): string {
   const stats = computeStats(trip)
   const esc = (s: string) =>
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -100,7 +100,7 @@ export function downloadTripGpx(trip: Trip): void {
     })
     .join("\n")
 
-  const gpx = `<?xml version="1.0" encoding="UTF-8"?>
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="Bicycle" xmlns="http://www.topografix.com/GPX/1/1">
   <metadata>
     <name>${esc(trip.title)}</name>
@@ -116,5 +116,14 @@ ${trkpts}
   </trk>
 </gpx>
 `
-  triggerDownload(`${slug(trip)}.gpx`, "application/gpx+xml", gpx)
+}
+
+/** Download a single ride as a CSV of track points (for spreadsheets). */
+export function downloadTripCsv(trip: Trip): void {
+  triggerDownload(`${slug(trip)}.csv`, "text/csv", tripToCsv(trip))
+}
+
+/** Download a single ride as GPX 1.1. */
+export function downloadTripGpx(trip: Trip): void {
+  triggerDownload(`${slug(trip)}.gpx`, "application/gpx+xml", tripToGpx(trip))
 }
