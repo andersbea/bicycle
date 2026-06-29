@@ -13,7 +13,7 @@ export function WeatherBadge({ w, compact = false }: { w: WeatherSnapshot; compa
     )
   }
   return (
-    <div className="flex items-center gap-3 rounded-box bg-base-200/60 px-3 py-2 ring-1 ring-base-content/5 elevate">
+    <div className="flex items-center gap-3 rounded-box bg-base-200/60 px-3 py-2 ring-1 ring-base-content/5">
       <span className="text-2xl leading-none">{weatherIcon(w.code)}</span>
       <div className="leading-tight">
         <div className="tnum text-lg font-semibold">

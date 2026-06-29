@@ -66,7 +66,7 @@ export function TripDetail({
       </div>
 
       <div className="flex-1 overflow-y-auto no-scrollbar">
-        <div className="mx-auto w-full max-w-4xl px-5 pt-1 pb-6 lg:px-8">
+        <div className="mx-auto w-full max-w-4xl px-4 pb-6 lg:px-8">
           <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-5">
             {/* left: route + elevation */}
             <div className="flex flex-col gap-3">
@@ -85,7 +85,7 @@ export function TripDetail({
                 )}
               </div>
               {profile.length > 1 && (
-                <div className="rounded-box bg-base-200/50 p-3 ring-1 ring-base-content/5 elevate">
+                <div className="rounded-box bg-base-200/50 p-3 ring-1 ring-base-content/5">
                   <div className="mb-1 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide opacity-60">
                     <MountainSnow className="h-3.5 w-3.5 text-accent" /> Elevation profile
                   </div>
@@ -123,7 +123,7 @@ export function TripDetail({
                       {trip.weather.map((w, i) => (
                         <div
                           key={i}
-                          className="flex shrink-0 flex-col items-center rounded-box bg-base-200/60 px-3 py-2 ring-1 ring-base-content/5 elevate"
+                          className="flex shrink-0 flex-col items-center rounded-box bg-base-200/60 px-3 py-2 ring-1 ring-base-content/5"
                         >
                           <span className="text-xs opacity-50">{rideTime(w.t)}</span>
                           <span className="text-xl">{weatherIcon(w.code)}</span>

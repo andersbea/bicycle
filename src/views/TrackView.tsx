@@ -38,7 +38,7 @@ export function TrackView({ tracker }: { tracker: Tracker }) {
   }
 
   return (
-    <div className="flex h-full flex-col gap-3 overflow-y-auto no-scrollbar px-5 pt-1 pb-2 lg:px-8">
+    <div className="flex h-full flex-col gap-3 overflow-y-auto no-scrollbar px-4 pb-2 lg:px-8">
       {/* status row */}
       <div className="flex items-center justify-between">
         <span
@@ -70,7 +70,7 @@ export function TrackView({ tracker }: { tracker: Tracker }) {
       <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-5">
         {/* left: hero speed + weather */}
         <div className="flex flex-col gap-3">
-          <div className="flex flex-col items-center justify-center rounded-box bg-base-200/40 py-6 ring-1 ring-base-content/5 elevate lg:py-14">
+          <div className="flex flex-col items-center justify-center rounded-box bg-base-200/40 py-6 ring-1 ring-base-content/5 lg:py-14">
             <div className="tnum text-7xl font-bold leading-none text-primary lg:text-8xl">
               {kmh(currentSpeed)}
             </div>
