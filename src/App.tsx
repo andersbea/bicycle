@@ -92,7 +92,12 @@ export default function App() {
           <div className="flex min-w-0 flex-1 flex-col">
             <div className="flex min-h-0 flex-1 flex-col">
               {selected ? (
-                <TripDetail trip={selected} onBack={() => setSelectedId(null)} onDelete={handleDelete} />
+                <TripDetail
+                trip={selected}
+                dark={isDark}
+                onBack={() => setSelectedId(null)}
+                onDelete={handleDelete}
+              />
               ) : (
                 <>
                   <header className="flex items-center gap-2 px-4 py-2 safe-top safe-x lg:px-8">

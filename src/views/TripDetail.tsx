@@ -12,6 +12,7 @@ import {
   FileJson,
   FileText,
   MapPin,
+  Maximize2,
 } from "lucide-react"
 import type { Trip } from "@/trip/types"
 import { computeStats, elevationProfile } from "@/trip/stats"
@@ -20,19 +21,22 @@ import { downloadTripJson, downloadTripCsv, downloadTripGpx } from "@/trip/expor
 import { weatherIcon } from "@/trip/weather"
 import { StatTile } from "@/components/StatTile"
 import { WeatherBadge } from "@/components/WeatherBadge"
-import { TripMap } from "@/components/TripMap"
+import { TripMap, TripMapModal } from "@/components/TripMap"
 import { Sparkline } from "@/components/Sparkline"
 
 export function TripDetail({
   trip,
   onBack,
   onDelete,
+  dark,
 }: {
   trip: Trip
   onBack: () => void
   onDelete: (id: string) => void
+  dark: boolean
 }) {
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [mapExpanded, setMapExpanded] = useState(false)
   const stats = useMemo(() => computeStats(trip), [trip])
   const profile = useMemo(
     () => elevationProfile(trip.points).map((p) => ({ x: p.d, y: p.alt })),
@@ -66,7 +70,20 @@ export function TripDetail({
           <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-5">
             {/* left: route + elevation */}
             <div className="flex flex-col gap-3">
-              <TripMap points={trip.points} className="h-56 w-full lg:h-96" />
+              <div className="relative">
+                <TripMap points={trip.points} dark={dark} className="h-56 w-full lg:h-96" />
+                {trip.points.length > 0 && (
+                  <button
+                    onClick={() => setMapExpanded(true)}
+                    aria-label="Expand map"
+                    className="absolute inset-0 z-[5] flex items-start justify-end p-2"
+                  >
+                    <span className="rounded-lg bg-base-100/80 p-1.5 shadow ring-1 ring-base-content/10 backdrop-blur">
+                      <Maximize2 className="h-4 w-4" />
+                    </span>
+                  </button>
+                )}
+              </div>
               {profile.length > 1 && (
                 <div className="rounded-box bg-base-200/50 p-3 ring-1 ring-base-content/5">
                   <div className="mb-1 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide opacity-60">
@@ -160,6 +177,15 @@ export function TripDetail({
           </div>
           <div className="modal-backdrop bg-black/40" onClick={() => setConfirmDelete(false)} />
         </div>
+      )}
+
+      {mapExpanded && (
+        <TripMapModal
+          points={trip.points}
+          title={trip.title}
+          dark={dark}
+          onClose={() => setMapExpanded(false)}
+        />
       )}
     </div>
   )

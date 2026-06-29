@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
+import { X } from "lucide-react"
 import type { TrackPoint } from "@/trip/types"
 import { speeds } from "@/trip/stats"
 import { cn } from "@/lib/utils"
@@ -8,11 +9,15 @@ import { cn } from "@/lib/utils"
 interface TripMapProps {
   points: TrackPoint[]
   className?: string
+  /** Use the dark minimalist basemap (to match the app theme). */
+  dark?: boolean
+  /** Enable pan / zoom / scroll. Off = static preview. */
+  interactive?: boolean
   /** Cap rendered segments for long rides. */
   maxSegments?: number
 }
 
-/** Slow→fast speed mapped to a blue→orange hue (matches the SVG RouteMap). */
+/** Slow→fast speed mapped to a blue→orange hue. */
 function speedColor(t: number): string {
   const hue = 205 - t * 165
   return `hsl(${hue}, 85%, 55%)`
@@ -28,11 +33,18 @@ function downsampleIndices(len: number, max: number): number[] {
 }
 
 /**
- * Real slippy map (Leaflet + OpenStreetMap tiles) with the ride's GPS track
- * drawn on top, speed-coloured. Needs network for tiles; degrades to a grey
- * canvas offline. Used on the ride detail view.
+ * Slippy map with a minimalist CARTO basemap (light/dark to match the app) and
+ * the ride's GPS track on top, speed-coloured. No zoom buttons or attribution
+ * chrome — interaction is via gestures in the expanded modal. Needs network for
+ * tiles; degrades to a blank canvas offline.
  */
-export function TripMap({ points, className, maxSegments = 400 }: TripMapProps) {
+export function TripMap({
+  points,
+  className,
+  dark = true,
+  interactive = false,
+  maxSegments = 400,
+}: TripMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -40,23 +52,36 @@ export function TripMap({ points, className, maxSegments = 400 }: TripMapProps) 
     if (!el || points.length === 0) return
 
     const map = L.map(el, {
-      zoomControl: true,
-      attributionControl: true,
-      // Touch-friendly without hijacking page scroll on mobile.
-      scrollWheelZoom: false,
+      zoomControl: false,
+      attributionControl: false,
+      dragging: interactive,
+      scrollWheelZoom: interactive,
+      doubleClickZoom: interactive,
+      touchZoom: interactive,
+      boxZoom: interactive,
+      keyboard: interactive,
     })
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    // CARTO minimalist basemaps — muted, label-light, matching the app's look.
+    const variant = dark ? "dark_all" : "light_all"
+    L.tileLayer(`https://{s}.basemaps.cartocdn.com/${variant}/{z}/{x}/{y}{r}.png`, {
+      subdomains: "abcd",
+      maxZoom: 20,
+      detectRetina: true,
     }).addTo(map)
+
+    // The default CARTO dark basemap is near-black with very low land/street
+    // contrast — lift it to a charcoal so the street network stays legible.
+    if (dark) {
+      const pane = map.getPane("tilePane")
+      if (pane) pane.style.filter = "brightness(1.85) contrast(1.05)"
+    }
 
     const latlngs = points.map((p) => [p.lat, p.lng] as [number, number])
 
     if (latlngs.length === 1) {
       map.setView(latlngs[0], 16)
     } else {
-      // Speed-coloured segments (downsampled for long rides).
       const spd = speeds(points)
       const maxS = Math.max(1e-6, ...spd)
       const idx = downsampleIndices(latlngs.length, maxSegments)
@@ -67,7 +92,7 @@ export function TripMap({ points, className, maxSegments = 400 }: TripMapProps) 
         L.polyline([latlngs[a], latlngs[b]], {
           color: speedColor(Math.max(0, Math.min(1, t))),
           weight: 5,
-          opacity: 0.9,
+          opacity: 0.95,
           lineJoin: "round",
           lineCap: "round",
         }).addTo(map)
@@ -93,14 +118,13 @@ export function TripMap({ points, className, maxSegments = 400 }: TripMapProps) 
       }).addTo(map)
     }
 
-    // The container is often sized by fl/grid after mount — recompute once laid out.
     const raf = requestAnimationFrame(() => map.invalidateSize())
 
     return () => {
       cancelAnimationFrame(raf)
       map.remove()
     }
-  }, [points, maxSegments])
+  }, [points, dark, interactive, maxSegments])
 
   if (points.length === 0) {
     return (
@@ -116,4 +140,41 @@ export function TripMap({ points, className, maxSegments = 400 }: TripMapProps) 
   }
 
   return <div ref={containerRef} className={cn("z-0 overflow-hidden rounded-box", className)} />
+}
+
+/** Full-screen, gesture-driven map view opened from the detail preview. */
+export function TripMapModal({
+  points,
+  title,
+  dark,
+  onClose,
+}: {
+  points: TrackPoint[]
+  title: string
+  dark: boolean
+  onClose: () => void
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose()
+    }
+    document.addEventListener("keydown", onKey)
+    return () => document.removeEventListener("keydown", onKey)
+  }, [onClose])
+
+  return (
+    <div className="fixed inset-0 z-[90] flex flex-col bg-base-100">
+      <div className="flex items-center gap-2 px-3 py-2 safe-top safe-x">
+        <button
+          className="btn btn-ghost btn-sm btn-circle"
+          onClick={onClose}
+          aria-label="Close map"
+        >
+          <X className="h-5 w-5" />
+        </button>
+        <span className="truncate font-semibold">{title}</span>
+      </div>
+      <TripMap points={points} dark={dark} interactive className="min-h-0 flex-1 rounded-none" />
+    </div>
+  )
 }
