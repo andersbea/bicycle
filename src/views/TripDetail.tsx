@@ -20,7 +20,7 @@ import { downloadTripJson, downloadTripCsv, downloadTripGpx } from "@/trip/expor
 import { weatherIcon } from "@/trip/weather"
 import { StatTile } from "@/components/StatTile"
 import { WeatherBadge } from "@/components/WeatherBadge"
-import { RouteMap } from "@/components/RouteMap"
+import { TripMap } from "@/components/TripMap"
 import { Sparkline } from "@/components/Sparkline"
 
 export function TripDetail({
@@ -66,7 +66,7 @@ export function TripDetail({
           <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:items-start lg:gap-5">
             {/* left: route + elevation */}
             <div className="flex flex-col gap-3">
-              <RouteMap points={trip.points} className="h-52 w-full lg:h-80" />
+              <TripMap points={trip.points} className="h-56 w-full lg:h-96" />
               {profile.length > 1 && (
                 <div className="rounded-box bg-base-200/50 p-3 ring-1 ring-base-content/5">
                   <div className="mb-1 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide opacity-60">

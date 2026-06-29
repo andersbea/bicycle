@@ -13,9 +13,9 @@ Drive and re-import later.
 - **Weather logging** — temperature, "feels like", conditions and wind are
   fetched from [Open-Meteo](https://open-meteo.com) at the start of a ride and
   every few minutes after (no API key, free). Can be turned off in Settings.
-- **History** — every finished ride with a speed-tinted route map, full stats
-  (distance, moving time, avg/max speed, ascent/descent, max grade) and an
-  elevation profile.
+- **History** — every finished ride with full stats (distance, moving time,
+  avg/max speed, ascent/descent, max grade), a speed-tinted route drawn on an
+  **OpenStreetMap** (Leaflet) basemap, and a smoothed elevation profile.
 - **Trends** — charts of distance / avg speed / climbing across your rides,
   lifetime totals, personal bests, and how your latest ride compares to your
   average.
@@ -88,4 +88,9 @@ Pages path. Serving from a different path? Set `BASE_PATH` accordingly.
 - Consumer GPS altitude is noisy, so incline/decline and grade are *smoothed
   estimates* (windowed-median filtering), not barometric-grade figures.
 - Low-accuracy fixes (>50 m) are discarded to keep distance and elevation sane.
-- Everything works offline from `localStorage`; only weather needs the network.
+- Everything works offline from `localStorage`; only weather and the detail-view
+  map tiles (OpenStreetMap) need the network — the map degrades to a blank canvas
+  offline.
+- Average speed is a *moving* average (distance ÷ time spent moving); GPS speed
+  spikes above 80 km/h and long signal-dropout gaps are filtered out so the
+  numbers stay realistic.

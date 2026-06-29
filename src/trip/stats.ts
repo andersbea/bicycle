@@ -8,6 +8,13 @@ import type { TrackPoint, Trip, TripStats } from "./types"
 
 const EARTH_R = 6_371_000 // metres
 
+/**
+ * Speeds above this are treated as GPS glitches and ignored — a single noisy
+ * fix can otherwise report hundreds of km/h and wreck the max/average. Set to
+ * 80 km/h, above any realistic ride (incl. fast descents).
+ */
+const MAX_PLAUSIBLE_SPEED = 80 / 3.6 // m/s
+
 /** Great-circle distance between two coordinates, in metres. */
 export function haversine(
   aLat: number,
@@ -49,17 +56,16 @@ export function speeds(points: TrackPoint[]): number[] {
   for (let i = 1; i < points.length; i++) {
     const p = points[i]
     const prev = points[i - 1]
+    let v: number
     if (typeof p.speed === "number" && p.speed >= 0 && Number.isFinite(p.speed)) {
-      out[i] = p.speed
-      continue
+      v = p.speed
+    } else {
+      const dt = (p.t - prev.t) / 1000
+      const dist = haversine(prev.lat, prev.lng, p.lat, p.lng)
+      v = dt > 0 ? dist / dt : out[i - 1]
     }
-    const dt = (p.t - prev.t) / 1000
-    if (dt <= 0) {
-      out[i] = out[i - 1]
-      continue
-    }
-    const dist = haversine(prev.lat, prev.lng, p.lat, p.lng)
-    out[i] = dist / dt
+    // Reject implausible spikes (GPS noise) — carry the previous good value.
+    out[i] = Number.isFinite(v) && v >= 0 && v <= MAX_PLAUSIBLE_SPEED ? v : out[i - 1]
   }
   if (points.length > 1) out[0] = out[1]
   return out
@@ -122,16 +128,25 @@ export function computeStats(trip: Trip): TripStats {
   const end = trip.endedAt ?? pts[n - 1].t
   const durationMs = Math.max(0, end - trip.startedAt - (trip.pausedMs ?? 0))
 
-  // Moving time: sum dt for segments where speed clears a walking-pace floor.
+  // Moving time AND moving distance, accumulated over the SAME segments, so the
+  // moving average can't blow up. (Previously total distance ÷ moving time
+  // produced absurd values — e.g. one big GPS-dropout jump over a short moving
+  // window reading 1000+ km/h.) A segment counts as "moving" when it's recent
+  // (no long gap) and above a walking-pace floor.
   const MOVING_FLOOR = 0.8 // m/s ≈ 2.9 km/h
+  const MAX_GAP_MS = 60_000
   let movingMs = 0
+  let movingDistM = 0
   for (let i = 1; i < n; i++) {
     const dt = pts[i].t - pts[i - 1].t
-    if (dt > 0 && dt < 60_000 && spd[i] >= MOVING_FLOOR) movingMs += dt
+    if (dt > 0 && dt < MAX_GAP_MS && spd[i] >= MOVING_FLOOR) {
+      movingMs += dt
+      movingDistM += cum[i] - cum[i - 1]
+    }
   }
 
   const maxSpeed = spd.reduce((m, s) => (s > m ? s : m), 0)
-  const avgSpeed = movingMs > 0 ? distanceM / (movingMs / 1000) : 0
+  const avgSpeed = movingMs > 0 ? movingDistM / (movingMs / 1000) : 0
   const avgSpeedOverall =
     durationMs > 0 ? distanceM / (durationMs / 1000) : 0
 

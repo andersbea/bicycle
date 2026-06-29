@@ -71,6 +71,11 @@ describe("speeds", () => {
     expect(s).toBeGreaterThan(10)
     expect(s).toBeLessThan(12)
   })
+
+  it("rejects implausible GPS speed spikes (> ~80 km/h)", () => {
+    const pts = [pt(0, 0, 0, null, 5), pt(1000, 0.00001, 0, null, 300)]
+    expect(speeds(pts)[1]).toBeLessThan(80 / 3.6)
+  })
 })
 
 describe("smoothedAltitudes", () => {
@@ -133,6 +138,23 @@ describe("computeStats", () => {
     const s = computeStats(trip(pts))
     expect(s.descentM).toBeGreaterThan(0)
     expect(s.ascentM).toBe(0)
+  })
+
+  it("keeps the average sane across a GPS dropout (regression)", () => {
+    // Walking fixes ~9 m / 10 s apart (≈0.9 m/s), then a 5-minute signal gap
+    // with a ~480 m straight-line jump, then more walking. Speed is derived
+    // from positions (no GPS speed field). The gap segment must be excluded
+    // from the moving average rather than inflating it.
+    const pts = [
+      pt(0, 57.70000, 11.97),
+      pt(10_000, 57.70008, 11.97),
+      pt(20_000, 57.70016, 11.97),
+      pt(320_000, 57.70450, 11.97), // 5-min gap + ~480 m jump
+      pt(330_000, 57.70458, 11.97),
+    ]
+    const s = computeStats(trip(pts))
+    expect(s.avgSpeed).toBeLessThan(5) // m/s — i.e. not tens/hundreds of km/h
+    expect(s.avgSpeed).toBeLessThanOrEqual(s.maxSpeed + 0.01)
   })
 
   it("subtracts paused time from the duration", () => {
