@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+/* daisyUI 5 as a Tailwind v4 plugin. A few built-in themes are enabled for the
+   Settings theme picker, plus two custom themes that match the app's logo. */
+@plugin "daisyui" {
+  themes: night, dim, synthwave, retro, forest, winter, aqua, coffee;
+}
+
+/* Custom dark theme — the default. Cyan/purple to match logo.svg. */
+@plugin "daisyui/theme" {
+  name: "bicycle";
+  default: true;
+  prefersdark: true;
+  color-scheme: dark;
+
+  --color-base-100: oklch(0.16 0.012 280);
+  --color-base-200: oklch(0.22 0.014 280);
+  --color-base-300: oklch(0.28 0.018 280);
+  --color-base-content: oklch(0.96 0.005 280);
+
+  --color-primary: oklch(0.78 0.16 220);
+  --color-primary-content: oklch(0.16 0.03 220);
+  --color-secondary: oklch(0.74 0.17 320);
+  --color-secondary-content: oklch(0.16 0.03 320);
+  --color-accent: oklch(0.82 0.16 160);
+  --color-accent-content: oklch(0.16 0.03 160);
+  --color-neutral: oklch(0.30 0.02 280);
+  --color-neutral-content: oklch(0.92 0.01 280);
+
+  --color-info: oklch(0.78 0.13 220);
+  --color-info-content: oklch(0.16 0.03 220);
+  --color-success: oklch(0.78 0.17 150);
+  --color-success-content: oklch(0.16 0.03 150);
+  --color-warning: oklch(0.83 0.16 80);
+  --color-warning-content: oklch(0.2 0.04 80);
+  --color-error: oklch(0.7 0.2 20);
+  --color-error-content: oklch(0.16 0.03 20);
+
+  --radius-selector: 1rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+/* Custom light theme. */
+@plugin "daisyui/theme" {
+  name: "bicycle-light";
+  default: false;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-base-100: oklch(0.99 0.004 280);
+  --color-base-200: oklch(0.96 0.006 280);
+  --color-base-300: oklch(0.92 0.008 280);
+  --color-base-content: oklch(0.22 0.02 280);
+
+  --color-primary: oklch(0.6 0.16 220);
+  --color-primary-content: oklch(0.98 0.01 220);
+  --color-secondary: oklch(0.6 0.18 320);
+  --color-secondary-content: oklch(0.98 0.01 320);
+  --color-accent: oklch(0.62 0.16 160);
+  --color-accent-content: oklch(0.98 0.01 160);
+  --color-neutral: oklch(0.3 0.02 280);
+  --color-neutral-content: oklch(0.96 0.01 280);
+
+  --color-info: oklch(0.6 0.13 220);
+  --color-info-content: oklch(0.98 0.01 220);
+  --color-success: oklch(0.6 0.16 150);
+  --color-success-content: oklch(0.98 0.01 150);
+  --color-warning: oklch(0.7 0.16 80);
+  --color-warning-content: oklch(0.2 0.04 80);
+  --color-error: oklch(0.6 0.2 20);
+  --color-error-content: oklch(0.98 0.01 20);
+
+  --radius-selector: 1rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  /* 100dvh tracks the visible viewport (URL bar collapses, etc.) — unlike
+     100svh which stays at the smallest possible height. */
+  height: 100dvh;
+  overflow: hidden;
+}
+
+html {
+  background: var(--color-base-100);
+}
+
+body {
+  background: var(--color-base-100);
+  color: var(--color-base-content);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.005em;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Tabular figures for all the live metrics so digits don't jitter as they
+   count up. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Animated background gradient blobs, tinted by the active theme's primary /
+   secondary colours. Rendered as fixed divs in App.tsx so they aren't affected
+   by scrolling content. */
+.bg-blob-a,
+.bg-blob-b {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+}
+.bg-blob-a {
+  width: 90vw;
+  height: 80vh;
+  top: -25vh;
+  right: -15vw;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in oklch, var(--color-primary) 16%, transparent),
+    transparent 70%
+  );
+  animation: blob-drift-a 45s ease-in-out infinite;
+}
+.bg-blob-b {
+  width: 80vw;
+  height: 75vh;
+  bottom: -20vh;
+  left: -15vw;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in oklch, var(--color-secondary) 16%, transparent),
+    transparent 70%
+  );
+  animation: blob-drift-b 55s ease-in-out infinite;
+}
+
+@keyframes blob-drift-a {
+  0%, 100% { transform: translate(0, 0); }
+  20%      { transform: translate(-7vw, 10vh); }
+  45%      { transform: translate(6vw, -7vh); }
+  70%      { transform: translate(-4vw, 5vh); }
+}
+@keyframes blob-drift-b {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(9vw, -7vh); }
+  50%      { transform: translate(-6vw, 9vh); }
+  75%      { transform: translate(7vw, 5vh); }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 0.7; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.pulse-ring { animation: pulse-ring 1.8s ease-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-blob-a,
+  .bg-blob-b,
+  .pulse-ring { animation: none; }
+}
+
+/* Safe-area padding for notched phones / PWA standalone mode. */
+.safe-top { padding-top: max(0.75rem, env(safe-area-inset-top)); }
+.safe-bottom { padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
+.safe-x {
+  padding-left: max(0.875rem, env(safe-area-inset-left));
+  padding-right: max(0.875rem, env(safe-area-inset-right));
+}
+
+/* Hide scrollbars on scrollable panes for a more app-like feel. */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
